@@ -4,13 +4,14 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
+from keras.utils import plot_model
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 
-# MNIST class
+# Mammographic Masses class
 
-class MM():
+class MM:
     def __init__(self, hidden_layers=2, nodes_per_layer=3, activation_fn=0, learning_rate=10e-2):
         self.hidden_layers = hidden_layers
         self.nodes_per_layer = nodes_per_layer
@@ -140,3 +141,29 @@ Optimized Parameters:
            bounds[2]["name"], opt_mnist.x_opt[2],
            bounds[3]["name"], opt_mnist.x_opt[3]))
 print("optimized loss: {0}".format(opt_mnist.fx_opt))
+
+
+def create_model(hidden_layers=2, nodes_per_layer=3, activation_fn=0, learning_rate=10e-2):
+    hidden_layers = int(hidden_layers)
+    nodes_per_layer = int(nodes_per_layer)
+    learning_rate = int(learning_rate)
+    if activation_fn == 0:
+        activation_fn = 'relu'
+    else:
+        activation_fn = 'sigmoid'
+
+    model = Sequential()
+    model.add(Dense(4, activation=activation_fn, input_shape=(4,)))  # input layer
+
+    for i in range(int(hidden_layers)):
+        model.add(Dense(nodes_per_layer, activation=activation_fn))
+
+    model.add(Dense(1, activation=activation_fn))  # output layer
+
+    adam = Adam(lr=learning_rate)
+    model.compile(loss='mean_squared_error', optimizer=adam, metrics=['accuracy'])
+
+    return model
+
+
+plot_model(create_model(opt_mnist.x_opt[0], opt_mnist.x_opt[1], opt_mnist.x_opt[2], opt_mnist.x_opt[3]), to_file='model.png', show_shapes=True)

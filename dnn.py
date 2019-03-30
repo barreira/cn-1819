@@ -6,7 +6,9 @@ from keras.optimizers import Adam
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler
 
+
 #################################################### PREPROCESSING #####################################################
+
 
 # Read dataset from CSV file
 
@@ -34,6 +36,7 @@ df_target = df['Severity']
 
 scaler = StandardScaler()
 df_features[df_features.columns] = scaler.fit_transform(df_features[df_features.columns])  # scales the existing df
+
 
 ####################################################### MODEL ##########################################################
 
