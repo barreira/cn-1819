@@ -48,7 +48,7 @@ def create_model(hidden_layers=2, nodes_per_layer=3, activation_fn='relu', learn
     model.add(Dense(1, activation=activation_fn))  # output layer
 
     adam = Adam(lr=learning_rate)
-    model.compile(loss='mean_squared_error', optimizer=adam, metrics=["accuracy"])
+    model.compile(loss='mean_squared_error', optimizer=adam, metrics=['accuracy'])
 
     return model
 
