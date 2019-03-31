@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 from keras.wrappers.scikit_learn import KerasClassifier
@@ -6,6 +7,24 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.preprocessing import StandardScaler
+from matplotlib import pyplot as plt
+from math import sqrt
+
+
+def mkdir(dir_name):
+    '''
+    Cria pasta cujo path é recebido como parâmetro.
+    :param dir_name: Path para a pasta a ser criada
+    '''
+    try:
+        os.rmdir(dir_name)
+    except OSError:
+        pass
+    try:
+        os.mkdir(dir_name)
+    except OSError:
+        pass
+
 
 #################################################### PREPROCESSING #####################################################
 
@@ -19,6 +38,23 @@ df = pd.read_csv('mammographic_masses.data.txt',
 # Drop unrequired feature 'BI-RADS'
 
 df = df.drop(['BI-RADS'], axis=1)
+
+# Generate feature distribution graphs to files inside dist folder
+
+mkdir("dist")
+
+nRows = df.shape[0]
+nBins = int(round(sqrt(nRows)))  # binning
+
+for key in df.keys():
+    df.hist(column=key, bins=nBins)
+    fig_name = "dist-" + key + ".png"
+    plt.savefig("dist/" + fig_name)
+
+# Print dataset description to file
+
+pd.options.display.max_columns = 2000
+print(df.describe(), file=open("dataset_description.txt", 'w'))
 
 # Discard lines with NaN values
 
@@ -42,7 +78,7 @@ features[features.columns] = scaler.fit_transform(features[features.columns])  #
 
 
 # Creates Keras model
-def create_model(hidden_layers=2, nodes_per_layer=3, activation_fn='relu', learning_rate=10e-2):
+def create_model(hidden_layers=2, nodes_per_layer=3, activation_fn='relu', learning_rate=1e-2):
     model = Sequential()
     model.add(Dense(4, activation=activation_fn, input_shape=(4,)))  # input layer
 
@@ -78,7 +114,7 @@ hp_dist = {
     'hidden_layers': [2, 4, 8, 16, 32],
     'nodes_per_layer': list(range(1, 21)),
     'activation_fn': ['relu', 'sigmoid'],
-    'learning_rate': [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
+    'learning_rate': np.random.uniform(low=1e-8, high=1e-2, size=(10,))
 }
 
 # Random Search to optimize hyperparameters + Results
