@@ -15,7 +15,6 @@
 from game import Agent
 from game import Actions
 from game import Directions
-import random
 from util import manhattanDistance
 import util
 
@@ -28,7 +27,7 @@ class GhostAgent( Agent ):
         if len(dist) == 0:
             return Directions.STOP
         else:
-            return util.chooseFromDistribution( dist )
+            return util.chooseFromDistribution(dist)
 
     def getDistribution(self, state):
         "Returns a Counter encoding a distribution over actions from the provided state."
