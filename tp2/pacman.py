@@ -665,6 +665,13 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
 
     return games
 
+def evaluate(epsilon, alpha, gamma):
+
+    games = runGames(**args)
+
+    return game.state.getScore()
+
+
 if __name__ == '__main__':
     """
     The main function called when pacman.py is run
@@ -677,7 +684,32 @@ if __name__ == '__main__':
     > python pacman.py --help
     """
     args = readCommand( sys.argv[1:] ) # Get game components based on input
-    runGames( **args )
+
+    params = sys.argv[-1].split(',')
+
+    epsilon = 0
+    alpha = 0
+    gamma = 0
+
+    for param in params:
+        subparams = param.split('=')
+
+        name = subparams[0]
+        value = subparams[1]
+
+        if name == 'epsilon':
+            epsilon = value
+        elif name == 'alpha':
+            alpha = value
+        else:
+            gamma = value
+
+    print(args)
+
+    games = runGames(**args)
+
+    for game in games:
+        print(game.state.getScore())
 
     # import cProfile
     # cProfile.run("runGames( **args )")
