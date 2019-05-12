@@ -1,6 +1,9 @@
 tp.md
-CN_ProjectAssignment_1.ipynb
-venv/
-venv36/
+
+*.pyc
+*.ipynb
+
+venv*/
+
 .idea/
 .DS_Store
