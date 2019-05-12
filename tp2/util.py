@@ -15,7 +15,6 @@
 import sys
 import inspect
 import heapq, random
-import cStringIO
 
 
 class FixedRandom:
@@ -482,9 +481,11 @@ def sample(distribution, values = None):
         total += distribution[i]
     return values[i]
 
+
 def sampleFromCounter(ctr):
     items = sorted(ctr.items())
     return sample([v for k,v in items], [k for k,v in items])
+
 
 def getProbability(value, distribution, values):
     """
@@ -497,9 +498,11 @@ def getProbability(value, distribution, values):
             total += prob
     return total
 
+
 def flipCoin( p ):
     r = random.random()
     return r < p
+
 
 def chooseFromDistribution( distribution ):
     "Takes either a counter or a list of (prob, key) pairs and samples"
@@ -510,6 +513,7 @@ def chooseFromDistribution( distribution ):
     for prob, element in distribution:
         base += prob
         if r <= base: return element
+
 
 def nearestPoint( pos ):
     """

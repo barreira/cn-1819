@@ -46,6 +46,7 @@ from game import Actions
 from util import nearestPoint
 from util import manhattanDistance
 import layout
+import numpy as np
 import sys, random, os
 
 ###################################################
@@ -665,11 +666,143 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
 
     return games
 
-def evaluate(epsilon, alpha, gamma):
 
+def build_options(epsilon, alpha, gamma):
+    return "epsilon=%.2f,alpha=%.2f,gamma=%.2f" % (epsilon, alpha, gamma)
+
+
+def get_win_ratio(game_list):
+    wins = 0
+    for g in game_list:
+        if g.state.getScore() > 0:
+            wins = wins + 1
+    return wins / len(game_list)
+
+
+def evaluate_grid_search(command):
+    epsilon = 0
+    alpha = 0
+    gamma = 0
+    win_ratio = 0
+
+    command.append("-a")
+    command.append(build_options(epsilon, alpha, gamma))
+
+    # calcular valores entre 0 e 1 (inclusive) com steps de 0.05
+    for i in range(21):
+        if win_ratio > 0.8:
+            break
+        for j in range(11):
+            if win_ratio > 0.8:
+                break
+            for k in range(11):
+                command[-1] = build_options(i * 0.05, j * 0.1, k * 0.1)
+                args = readCommand(command[1:])
+                games = runGames(**args)
+                aux_win_ratio = get_win_ratio(games)
+                if aux_win_ratio >= win_ratio:
+                    win_ratio = aux_win_ratio
+                    epsilon = i * 0.05
+                    alpha = j * 0.1
+                    gamma = k * 0.1
+                if win_ratio > 0.8:
+                    break
+
+    print('Grid Search win ratio=', win_ratio)
+    print('epsilon:', epsilon, ", alpha:", alpha, ", gamma:", gamma)
+
+
+def run_game(options):
+    command = sys.argv
+    command.append("-a")
+    command.append(build_options(options.position[0], options.position[1], options.position[2]))
+    args = readCommand(command[1:])
     games = runGames(**args)
+    return get_win_ratio(games)
 
-    return game.state.getScore()
+
+w = 0.5
+c1 = 0.8
+c2 = 0.9
+
+
+def random_position():
+    r = np.random.uniform(0, 1.1)
+    if r > 1:
+        r = 1
+    return r
+
+
+class Particle:
+    def __init__(self):
+        self.position = np.array([random_position(), random_position(), random_position()])
+        self.best_position = self.position
+        self.best_value = float('-inf')
+        self.velocity = np.array([0, 0, 0])
+
+    def __str__(self):
+        print("Position: ", self.position, " Best position: ", self.best_position)
+
+    def move(self):
+        self.position = self.position + self.velocity
+
+
+class Space:
+    def __init__(self, target, target_error, num_particles):
+        self.target = target
+        self.target_error = target_error
+        self.num_particles = num_particles
+        self.particles = []
+        self.best_value = float('-inf')
+        self.best_position = np.array([random_position(), random_position(), random_position()])
+
+    def print_particles(self):
+        for p in self.particles:
+            p.__str__()
+
+    @staticmethod
+    def fitness(particle):
+        return run_game(particle)
+
+    def set_best(self):
+        for p in self.particles:
+            fitness_value = self.fitness(p)
+            if p.best_value < fitness_value:
+                p.best_value = fitness_value
+                p.best_position = p.position
+            if self.best_value < fitness_value:
+                self.best_value = fitness_value
+                self.best_position = p.position
+
+    def move_particles(self):
+        for p in self.particles:
+            global w
+            new_velocity = (w * p.velocity) + (c1 * random.random()) * (p.best_position - p.position) + \
+                           (random.random() * c2) * (self.best_position - p.position)
+            p.velocity = new_velocity
+            p.move()
+
+
+def evaluate_pso():
+    space = Space(1, 0.1, 10)
+    particles = [Particle() for _ in range(space.num_particles)]
+    space.particles = particles
+    space.print_particles()
+    num_iterations = 1000
+    i = 1
+
+    while i < num_iterations:
+        space.set_best()
+        print("Particles set")
+        if abs(space.best_value - space.target) <= space.target_error:
+            break
+        space.move_particles()
+        i = i + 1
+
+    print("PSO best solution is: epsilon=", space.best_position[0], ",alpha=", space.best_position[1], ",gamma=",
+          space.best_position[2])
+    print("PSO value: ", space.best_value)
+    print("Iterations: ", i)
 
 
 if __name__ == '__main__':
@@ -683,34 +816,10 @@ if __name__ == '__main__':
 
     > python pacman.py --help
     """
-    args = readCommand( sys.argv[1:] ) # Get game components based on input
+    # Get game components based on input
+    # args = readCommand(sys.argv[1:])
+    # games = runGames(**args)
+    # evaluate_grid_search(sys.argv)
+    evaluate_pso()
 
-    params = sys.argv[-1].split(',')
-
-    epsilon = 0
-    alpha = 0
-    gamma = 0
-
-    for param in params:
-        subparams = param.split('=')
-
-        name = subparams[0]
-        value = subparams[1]
-
-        if name == 'epsilon':
-            epsilon = value
-        elif name == 'alpha':
-            alpha = value
-        else:
-            gamma = value
-
-    print(args)
-
-    games = runGames(**args)
-
-    for game in games:
-        print(game.state.getScore())
-
-    # import cProfile
-    # cProfile.run("runGames( **args )")
     pass
