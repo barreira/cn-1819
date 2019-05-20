@@ -40,7 +40,7 @@ class QLearningAgent(ReinforcementAgent):
     """
 
     def __init__(self, **args):
-        "You can initialize Q-values here..."
+        # You can initialize Q-values here...
         ReinforcementAgent.__init__(self, **args)
         "*** YOUR CODE HERE ***"
         self.qValues = util.Counter()
@@ -55,7 +55,7 @@ class QLearningAgent(ReinforcementAgent):
         if (state, action) in self.qValues:
             q_value = self.qValues[(state, action)]
         else:
-            q_value = 0
+            q_value = 0.0
 
         return q_value
 
@@ -112,14 +112,14 @@ class QLearningAgent(ReinforcementAgent):
           HINT: To pick randomly from a list, use random.choice(list)
         """
         # Pick Action
-        legalActions = self.getLegalActions(state)
+        legal_actions = self.getLegalActions(state)
         "*** YOUR CODE HERE ***"
         if util.flipCoin(self.epsilon):
-            return random.choice(legalActions)
+            return random.choice(legal_actions)
         else:
             return self.computeActionFromQValues(state)
 
-    def update(self, state, action, nextState, reward):
+    def update(self, state, action, next_state, reward):
         """
           The parent class calls this to observe a
           state = action => nextState and reward transition.
@@ -129,9 +129,8 @@ class QLearningAgent(ReinforcementAgent):
           it will be called on your behalf
         """
         "*** YOUR CODE HERE ***"
-        self.qValues[(state, action)] = (1 - self.alpha) * self.getQValue(state, action) + self.alpha * (reward +
-                                                                                                         self.discount * self.computeValueFromQValues(
-                    nextState))
+        self.qValues[(state, action)] = (1 - self.alpha) * self.getQValue(state, action) + self.alpha * \
+                                        (reward + self.discount * self.computeValueFromQValues(next_state))
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)
@@ -141,7 +140,7 @@ class QLearningAgent(ReinforcementAgent):
 
 
 class PacmanQAgent(QLearningAgent):
-    "Exactly the same as QLearningAgent, but with different default parameters"
+    # Exactly the same as QLearningAgent, but with different default parameters
 
     def __init__(self, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, **args):
         """

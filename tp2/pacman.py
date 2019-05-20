@@ -47,11 +47,14 @@ from util import nearestPoint
 from util import manhattanDistance
 import layout
 import numpy as np
-import sys, random, os
+import sys
+import random
+import os
 
 ###################################################
 # YOUR INTERFACE TO THE PACMAN WORLD: A GameState #
 ###################################################
+
 
 class GameState:
     """
@@ -74,13 +77,14 @@ class GameState:
 
     # static variable keeps track of which states have had getLegalActions called
     explored = set()
+
     def getAndResetExplored():
         tmp = GameState.explored.copy()
         GameState.explored = set()
         return tmp
     getAndResetExplored = staticmethod(getAndResetExplored)
 
-    def getLegalActions( self, agentIndex=0 ):
+    def getLegalActions(self, agentIndex=0):
         """
         Returns the legal actions for the agent specified.
         """
@@ -92,7 +96,7 @@ class GameState:
         else:
             return GhostRules.getLegalActions( self, agentIndex )
 
-    def generateSuccessor( self, agentIndex, action):
+    def generateSuccessor(self, agentIndex, action):
         """
         Returns the successor state after the specified agent takes the action.
         """
@@ -105,18 +109,18 @@ class GameState:
         # Let agent's logic deal with its action's effects on the board
         if agentIndex == 0:  # Pacman is moving
             state.data._eaten = [False for i in range(state.getNumAgents())]
-            PacmanRules.applyAction( state, action )
+            PacmanRules.applyAction(state, action)
         else:                # A ghost is moving
-            GhostRules.applyAction( state, action, agentIndex )
+            GhostRules.applyAction(state, action, agentIndex)
 
         # Time passes
         if agentIndex == 0:
-            state.data.scoreChange += -TIME_PENALTY # Penalty for waiting around
+            state.data.scoreChange += -TIME_PENALTY  # Penalty for waiting around
         else:
-            GhostRules.decrementTimer( state.data.agentStates[agentIndex] )
+            GhostRules.decrementTimer(state.data.agentStates[agentIndex])
 
         # Resolve multi-agent effects
-        GhostRules.checkDeath( state, agentIndex )
+        GhostRules.checkDeath(state, agentIndex)
 
         # Book keeping
         state.data._agentMoved = agentIndex
@@ -125,16 +129,16 @@ class GameState:
         GameState.explored.add(state)
         return state
 
-    def getLegalPacmanActions( self ):
-        return self.getLegalActions( 0 )
+    def getLegalPacmanActions(self):
+        return self.getLegalActions(0)
 
-    def generatePacmanSuccessor( self, action ):
+    def generatePacmanSuccessor(self, action):
         """
         Generates the successor state after the specified pacman move
         """
-        return self.generateSuccessor( 0, action )
+        return self.generateSuccessor(0, action)
 
-    def getPacmanState( self ):
+    def getPacmanState(self):
         """
         Returns an AgentState object for pacman (in game.py)
 
@@ -143,18 +147,18 @@ class GameState:
         """
         return self.data.agentStates[0].copy()
 
-    def getPacmanPosition( self ):
+    def getPacmanPosition(self):
         return self.data.agentStates[0].getPosition()
 
-    def getGhostStates( self ):
+    def getGhostStates(self):
         return self.data.agentStates[1:]
 
-    def getGhostState( self, agentIndex ):
+    def getGhostState(self, agentIndex):
         if agentIndex == 0 or agentIndex >= self.getNumAgents():
             raise Exception("Invalid index passed to getGhostState")
         return self.data.agentStates[agentIndex]
 
-    def getGhostPosition( self, agentIndex ):
+    def getGhostPosition(self, agentIndex):
         if agentIndex == 0:
             raise Exception("Pacman's index passed to getGhostPosition")
         return self.data.agentStates[agentIndex].getPosition()
@@ -162,10 +166,10 @@ class GameState:
     def getGhostPositions(self):
         return [s.getPosition() for s in self.getGhostStates()]
 
-    def getNumAgents( self ):
-        return len( self.data.agentStates )
+    def getNumAgents(self):
+        return len(self.data.agentStates)
 
-    def getScore( self ):
+    def getScore(self):
         return float(self.data.score)
 
     def getCapsules(self):
@@ -174,7 +178,7 @@ class GameState:
         """
         return self.data.capsules
 
-    def getNumFood( self ):
+    def getNumFood(self):
         return self.data.food.count()
 
     def getFood(self):
@@ -207,10 +211,10 @@ class GameState:
     def hasWall(self, x, y):
         return self.data.layout.walls[x][y]
 
-    def isLose( self ):
+    def isLose(self):
         return self.data._lose
 
-    def isWin( self ):
+    def isWin(self):
         return self.data._win
 
     #############################################
@@ -218,7 +222,7 @@ class GameState:
     # You shouldn't need to call these directly #
     #############################################
 
-    def __init__( self, prevState = None ):
+    def __init__(self, prevState = None):
         """
         Generates a new state by copying information from its predecessor.
         """
@@ -227,28 +231,28 @@ class GameState:
         else:
             self.data = GameStateData()
 
-    def deepCopy( self ):
-        state = GameState( self )
+    def deepCopy(self):
+        state = GameState(self)
         state.data = self.data.deepCopy()
         return state
 
-    def __eq__( self, other ):
+    def __eq__(self, other):
         """
         Allows two states to be compared.
         """
         return hasattr(other, 'data') and self.data == other.data
 
-    def __hash__( self ):
+    def __hash__(self):
         """
         Allows states to be keys of dictionaries.
         """
-        return hash( self.data )
+        return hash(self.data)
 
-    def __str__( self ):
+    def __str__(self):
 
         return str(self.data)
 
-    def initialize( self, layout, numGhostAgents=1000 ):
+    def initialize(self, layout, numGhostAgents=1000):
         """
         Creates an initial game state from a layout array (see layout.py).
         """
@@ -260,9 +264,11 @@ class GameState:
 # You shouldn't need to look through the code in this section of the file. #
 ############################################################################
 
+
 SCARED_TIME = 40    # Moves ghosts are scared
-COLLISION_TOLERANCE = 0.7 # How close ghosts must be to Pacman to kill
-TIME_PENALTY = 1 # Number of points lost each round
+COLLISION_TOLERANCE = 0.7  # How close ghosts must be to Pacman to kill
+TIME_PENALTY = 1  # Number of points lost each round
+
 
 class ClassicGameRules:
     """
@@ -272,10 +278,10 @@ class ClassicGameRules:
     def __init__(self, timeout=30):
         self.timeout = timeout
 
-    def newGame( self, layout, pacmanAgent, ghostAgents, display, quiet = False, catchExceptions=False):
+    def newGame(self, layout, pacmanAgent, ghostAgents, display, quiet=False, catchExceptions=False):
         agents = [pacmanAgent] + ghostAgents[:layout.getNumGhosts()]
         initState = GameState()
-        initState.initialize( layout, len(ghostAgents) )
+        initState.initialize(layout, len(ghostAgents))
         game = Game(agents, display, self, catchExceptions=catchExceptions)
         game.state = initState
         self.initialState = initState.deepCopy()
@@ -289,11 +295,11 @@ class ClassicGameRules:
         if state.isWin(): self.win(state, game)
         if state.isLose(): self.lose(state, game)
 
-    def win( self, state, game ):
+    def win(self, state, game):
         if not self.quiet: print "Pacman emerges victorious! Score: %d" % state.data.score
         game.gameOver = True
 
-    def lose( self, state, game ):
+    def lose(self, state, game):
         if not self.quiet: print "Pacman died! Score: %d" % state.data.score
         game.gameOver = True
 
@@ -321,44 +327,45 @@ class ClassicGameRules:
     def getMaxTimeWarnings(self, agentIndex):
         return 0
 
+
 class PacmanRules:
     """
     These functions govern how pacman interacts with his environment under
     the classic game rules.
     """
-    PACMAN_SPEED=1
+    PACMAN_SPEED = 1
 
-    def getLegalActions( state ):
+    def getLegalActions(state):
         """
         Returns a list of possible actions.
         """
-        return Actions.getPossibleActions( state.getPacmanState().configuration, state.data.layout.walls )
-    getLegalActions = staticmethod( getLegalActions )
+        return Actions.getPossibleActions(state.getPacmanState().configuration, state.data.layout.walls)
+    getLegalActions = staticmethod(getLegalActions)
 
-    def applyAction( state, action ):
+    def applyAction(state, action):
         """
         Edits the state to reflect the results of the action.
         """
-        legal = PacmanRules.getLegalActions( state )
+        legal = PacmanRules.getLegalActions(state)
         if action not in legal:
             raise Exception("Illegal action " + str(action))
 
         pacmanState = state.data.agentStates[0]
 
         # Update Configuration
-        vector = Actions.directionToVector( action, PacmanRules.PACMAN_SPEED )
-        pacmanState.configuration = pacmanState.configuration.generateSuccessor( vector )
+        vector = Actions.directionToVector(action, PacmanRules.PACMAN_SPEED)
+        pacmanState.configuration = pacmanState.configuration.generateSuccessor(vector)
 
         # Eat
         next = pacmanState.configuration.getPosition()
-        nearest = nearestPoint( next )
-        if manhattanDistance( nearest, next ) <= 0.5 :
+        nearest = nearestPoint(next)
+        if manhattanDistance(nearest, next) <= 0.5:
             # Remove food
-            PacmanRules.consume( nearest, state )
-    applyAction = staticmethod( applyAction )
+            PacmanRules.consume(nearest, state)
+    applyAction = staticmethod(applyAction)
 
-    def consume( position, state ):
-        x,y = position
+    def consume(position, state):
+        x, y = position
         # Eat food
         if state.data.food[x][y]:
             state.data.scoreChange += 10
@@ -371,20 +378,22 @@ class PacmanRules:
                 state.data.scoreChange += 500
                 state.data._win = True
         # Eat capsule
-        if( position in state.getCapsules() ):
-            state.data.capsules.remove( position )
+        if position in state.getCapsules():
+            state.data.capsules.remove(position)
             state.data._capsuleEaten = position
             # Reset all ghosts' scared timers
-            for index in range( 1, len( state.data.agentStates ) ):
+            for index in range(1, len(state.data.agentStates)):
                 state.data.agentStates[index].scaredTimer = SCARED_TIME
-    consume = staticmethod( consume )
+    consume = staticmethod(consume)
+
 
 class GhostRules:
     """
     These functions dictate how ghosts interact with their environment.
     """
-    GHOST_SPEED=1.0
-    def getLegalActions( state, ghostIndex ):
+    GHOST_SPEED = 1.0
+
+    def getLegalActions(state, ghostIndex):
         """
         Ghosts cannot stop, and cannot turn around unless they
         reach a dead end, but can turn 90 degrees at intersections.
@@ -626,7 +635,8 @@ def replayGame( layout, actions, display ):
 
     display.finish()
 
-def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False, timeout=30 ):
+
+def runGames(layout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False, timeout=30):
     import __main__
     __main__.__dict__['_display'] = display
 
@@ -662,7 +672,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
         print 'Average Score:', sum(scores) / float(len(scores))
         print 'Scores:       ', ', '.join([str(score) for score in scores])
         print 'Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate)
-        print 'Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins])
+        print 'Record:       ', ', '.join([['Loss', 'Win'][int(w)] for w in wins])
 
     return games
 
@@ -672,10 +682,10 @@ def build_options(epsilon, alpha, gamma):
 
 
 def get_win_ratio(game_list):
-    wins = 0
+    wins = 0.0
     for g in game_list:
         if g.state.getScore() > 0:
-            wins = wins + 1
+            wins = wins + 1.0
     return wins / len(game_list)
 
 
@@ -721,11 +731,6 @@ def run_game(options):
     return get_win_ratio(games)
 
 
-w = 0.5
-c1 = 0.8
-c2 = 0.9
-
-
 def random_position():
     r = np.random.uniform(0, 1.1)
     if r > 1:
@@ -737,8 +742,8 @@ class Particle:
     def __init__(self):
         self.position = np.array([random_position(), random_position(), random_position()])
         self.best_position = self.position
-        self.best_value = float('-inf')
-        self.velocity = np.array([0, 0, 0])
+        self.best_value = -0.1
+        self.velocity = np.array([0.0, 0.0, 0.0])
 
     def __str__(self):
         print("Position: ", self.position, " Best position: ", self.best_position)
@@ -748,13 +753,16 @@ class Particle:
 
 
 class Space:
-    def __init__(self, target, target_error, num_particles):
+    def __init__(self, target, target_error, num_particles, w, c1, c2):
         self.target = target
         self.target_error = target_error
         self.num_particles = num_particles
         self.particles = []
-        self.best_value = float('-inf')
+        self.best_value = -0.1  # qualquer numero negativo serve neste caso
         self.best_position = np.array([random_position(), random_position(), random_position()])
+        self.w = w
+        self.c1 = c1
+        self.c2 = c2
 
     def print_particles(self):
         for p in self.particles:
@@ -773,22 +781,26 @@ class Space:
             if self.best_value < fitness_value:
                 self.best_value = fitness_value
                 self.best_position = p.position
+            print('Best: ', self.best_value)
+            print('Target: ', self.target)
+            print('Error: ', abs(self.best_value - self.target))
+            if abs(self.best_value - self.target) <= self.target_error:
+                break
 
     def move_particles(self):
         for p in self.particles:
-            global w
-            new_velocity = (w * p.velocity) + (c1 * random.random()) * (p.best_position - p.position) + \
-                           (random.random() * c2) * (self.best_position - p.position)
+            new_velocity = (self.w * p.velocity) + (self.c1 * random.random()) * (p.best_position - p.position) + \
+                           (random.random() * self.c2) * (self.best_position - p.position)
             p.velocity = new_velocity
             p.move()
 
 
-def evaluate_pso():
-    space = Space(1, 0.1, 10)
+def evaluate_pso(w, c1, c2):
+    space = Space(1.0, 0.1, 10, w, c1, c2)
     particles = [Particle() for _ in range(space.num_particles)]
     space.particles = particles
     space.print_particles()
-    num_iterations = 1000
+    num_iterations = 20
     i = 1
 
     while i < num_iterations:
@@ -803,6 +815,36 @@ def evaluate_pso():
           space.best_position[2])
     print("PSO value: ", space.best_value)
     print("Iterations: ", i)
+    return i, space.best_value
+
+
+def evaluate():
+    iterations = 0
+    best_score = -0.1
+    w = 0.0
+    c1 = 0.0
+    c2 = 0.0
+
+    for i in range(11):
+        if iterations == 1:
+            break
+        w = i * 0.1
+        for j in range(11):
+            if iterations == 1:
+                break
+            c1 = j * 0.1
+            for k in range(11):
+                c2 = k * 0.1
+                print('PSO values: w=', w, ',c1=', c1, ',c2=', c2)
+                iterations, score = evaluate_pso(w, c1, c2)
+                if score > best_score:
+                    best_score = score
+                if iterations == 1:
+                    break
+
+    print('PSO best values: w=', w, ',c1=', c1, ',c2=', c2)
+    print('Iterations: ', iterations)
+    print('Best Score: ', best_score)
 
 
 if __name__ == '__main__':
@@ -817,9 +859,10 @@ if __name__ == '__main__':
     > python pacman.py --help
     """
     # Get game components based on input
-    # args = readCommand(sys.argv[1:])
-    # games = runGames(**args)
+    args = readCommand(sys.argv[1:])
+    games = runGames(**args)
     # evaluate_grid_search(sys.argv)
-    evaluate_pso()
+    # evaluate_pso(0.5, 0.8, 0.9)
+    # evaluate()
 
     pass
